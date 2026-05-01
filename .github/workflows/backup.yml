@@ -24,7 +24,8 @@ jobs:
 
     - name: Pull all metadata from Salesforce
       run: |
-        sf project retrieve start --target-org backuporg
+        sf project retrieve start --target-org backuporg \
+          --metadata ApexClass,ApexTrigger,LightningComponentBundle,CustomObject,Flow,Layout,PermissionSet,Profile
 
     - name: Commit backup to GitHub
       run: |
