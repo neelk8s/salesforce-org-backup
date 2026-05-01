@@ -42,11 +42,10 @@ jobs:
         git config user.name "github-actions[bot]"
         git add .
         if git diff --staged --quiet; then
-          echo "Nothing to commit — org unchanged"
+          echo "Nothing to commit"
         else
           git commit -m "Auto backup $(date +'%Y-%m-%d %H:%M:%S')"
-          git pull --rebase origin main
-          git push origin main
+          git push origin HEAD:main --force
         fi
 
     - name: Notify Slack on Success
