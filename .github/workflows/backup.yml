@@ -34,13 +34,15 @@ jobs:
           --metadata Layout
 
     - name: Commit backup to GitHub
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
       run: |
         git config user.email "backup-bot@github.com"
         git config user.name "Backup Bot"
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/neelk8s/salesforce-org-backup.git
+        git remote set-url origin https://neelk8s:${{ secrets.GITHUB_TOKEN }}@github.com/neelk8s/salesforce-org-backup.git
         git add .
         git diff --quiet && git diff --staged --quiet || git commit -m "Auto backup $(date +'%Y-%m-%d %H:%M:%S')"
-        git push
+        git push origin main
 
     - name: Notify Slack on Success
       if: success()
