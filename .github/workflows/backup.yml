@@ -38,16 +38,21 @@ jobs:
 
     - name: Commit backup to GitHub   
       run: |
+         git config user.email "github-actions@github.com"
          git config user.name "github-actions[bot]"
-         git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    
+         git rm --cached auth.txt || true
+
+    
          git add .
+
          if git diff --staged --quiet; then
-           echo "Nothing to commit"
+            echo "Nothing to commit"
          else
-           git commit -m "Auto backup $(date +'%Y-%m-%d %H:%M:%S')"
-           git pull origin main --rebase
-           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
-         fi
+            git commit -m "Auto backup $(date +'%Y-%m-%d %H:%M:%S')"
+            git push origin main
+        fi
 
     - name: Notify Slack on Success
       if: success()
