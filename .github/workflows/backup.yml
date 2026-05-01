@@ -1,10 +1,9 @@
-# .github/workflows/backup.yml
 name: Daily Salesforce Org Backup
 
 on:
   schedule:
-    - cron: '0 0 * * *' # runs every day at midnight UTC
-  workflow_dispatch: # also allows manual trigger
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   backup:
@@ -12,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Salesforce CLI
       run: npm install --global @salesforce/cli
@@ -22,10 +21,11 @@ jobs:
         echo "${{ secrets.SFDX_AUTH_URL }}" > auth.txt
         sf org login sfdx-url --sfdx-url-file auth.txt --alias backuporg
 
-    - name: Pull all metadata from Salesforce
+    - name: Pull metadata from Salesforce
       run: |
-        sf project retrieve start --target-org backuporg \
-          --metadata ApexClass,ApexTrigger,LightningComponentBundle,CustomObject,Flow,Layout,PermissionSet,Profile
+        sf project retrieve start \
+          --target-org backuporg \
+          --metadata "ApexClass,ApexTrigger,CustomObject,Flow,Layout,PermissionSet"
 
     - name: Commit backup to GitHub
       run: |
@@ -35,18 +35,20 @@ jobs:
         git diff --quiet && git diff --staged --quiet || git commit -m "Auto backup $(date +'%Y-%m-%d %H:%M:%S')"
         git push
 
-    - name: Notify Slack — Success
+    - name: Notify Slack on Success
       if: success()
-      uses: slackapi/slack-github-action@v1.24.0
+      uses: slackapi/slack-github-action@v2.0.0
       with:
-        payload: '{"text":"✅ Salesforce backup completed successfully!"}'
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
+        payload: |
+          {"text":"✅ Salesforce backup completed successfully!"}
 
-    - name: Notify Slack — Failure
+    - name: Notify Slack on Failure
       if: failure()
-      uses: slackapi/slack-github-action@v1.24.0
+      uses: slackapi/slack-github-action@v2.0.0
       with:
-        payload: '{"text":"❌ Salesforce backup FAILED! Check GitHub Actions."}'
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+        webhook-type: incoming-webhook
+        payload: |
+          {"text":"❌ Salesforce backup FAILED! Check GitHub Actions."}
