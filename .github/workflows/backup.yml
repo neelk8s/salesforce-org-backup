@@ -36,16 +36,18 @@ jobs:
           --metadata Flow \
           --metadata Layout
 
-    - name: Commit backup to GitHub
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
+    - name: Commit backup to GitHub   
       run: |
-        git config user.email "backup-bot@github.com"
-        git config user.name "Backup Bot"
-        git remote set-url origin https://neelk8s:${{ secrets.GITHUB_TOKEN }}@github.com/neelk8s/salesforce-org-backup.git
+        git config user.email "github-actions@github.com"
+        git config user.name "github-actions[bot]"
         git add .
-        git diff --quiet && git diff --staged --quiet || git commit -m "Auto backup $(date +'%Y-%m-%d %H:%M:%S')"
-        git push origin main
+        if git diff --staged --quiet; then
+          echo "Nothing to commit — org unchanged"
+        else
+          git commit -m "Auto backup $(date +'%Y-%m-%d %H:%M:%S')"
+          git pull --rebase origin main
+          git push origin main
+        fi
 
     - name: Notify Slack on Success
       if: success()
