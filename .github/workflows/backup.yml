@@ -25,7 +25,11 @@ jobs:
       run: |
         sf project retrieve start \
           --target-org backuporg \
-          --metadata "ApexClass,ApexTrigger,CustomObject,Flow,Layout,PermissionSet"
+          --metadata ApexClass \
+          --metadata ApexTrigger \
+          --metadata CustomObject \
+          --metadata Flow \
+          --metadata Layout
 
     - name: Commit backup to GitHub
       run: |
